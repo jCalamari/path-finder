@@ -1,16 +1,20 @@
 package org.scalamari.pathfinder.application
 
-import org.scalamari.pathfinder.domain.{DomainError, UnknownDomainError}
-import org.scalamari.pathfinder.model.{Edge, Path, VertexId}
+import org.scalamari.pathfinder.domain.DomainError
+import org.scalamari.pathfinder.model._
 import spray.json._
 
 private[application] trait JsonProtocol extends DefaultJsonProtocol {
 
-  implicit val vertexIdFormat = new JsonFormat[VertexId] {
+  implicit val nodeIdFormat = new FromStringFormat[NodeId](NodeId, _.value)
 
-    override def write(obj: VertexId): JsValue = JsString(obj.value)
+  implicit val nodeNameFormat = new FromStringFormat[NodeName](NodeName, _.value)
 
-    override def read(json: JsValue): VertexId = VertexId(json.convertTo[String])
+  private[application] class FromStringFormat[T](r: String => T, w: T => String) extends JsonFormat[T] {
+
+    override def read(json: JsValue): T = r(json.convertTo[String])
+
+    override def write(obj: T): JsValue = JsString(w(obj))
   }
 
   implicit val edgeFormat = jsonFormat2(Edge)
@@ -27,6 +31,8 @@ private[application] trait JsonProtocol extends DefaultJsonProtocol {
     override def read(json: JsValue): DomainError = deserializationError("ErrorFormat: not supported")
 
   }
+
+  implicit val nodeFormat = jsonFormat3(Node)
 
 }
 

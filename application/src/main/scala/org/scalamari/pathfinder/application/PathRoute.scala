@@ -12,21 +12,21 @@ private[application] final class PathRoute(pathService: PathService) extends Dir
 
   def route: Route = {
     pathPrefix("v1" / "path") {
-      (get & path(IdSegment / IdSegment) & pathEndOrSingleSlash) { (fromVertexId, toVertexId) =>
-        onComplete(pathService.findPaths(fromVertexId, toVertexId)) {
+      (get & path(IdSegment / IdSegment) & pathEndOrSingleSlash) { (fromNodeId, toNodeId) =>
+        onComplete(pathService.findPaths(fromNodeId, toNodeId)) {
           case Success(Right(paths)) => complete(paths)
-          case Success(Left(error)) => complete(error)
-          case Failure(thrown) => complete(thrown)
+          case Success(Left(error))  => complete(error)
+          case Failure(thrown)       => complete(thrown)
         }
       } ~
-      (post & path(IdSegment.repeat(2, 10, Slash)) & pathEndOrSingleSlash) { vertexIds =>
-        val edges = vertexIds.sliding(2).map { case Seq(fromId, toId) => Edge(fromId, toId) }.toVector
-        onComplete(pathService.createPath(Path(edges))) {
-          case Success(Right(path)) => complete(path)
-          case Success(Left(error)) => complete(error)
-          case Failure(thrown)      => complete(thrown)
+        (post & path(IdSegment.repeat(2, 10, Slash)) & pathEndOrSingleSlash) { nodeIds =>
+          val edges = nodeIds.sliding(2).map { case Seq(fromId, toId) => Edge(fromId, toId) }.toVector
+          onComplete(pathService.createPath(Path(edges))) {
+            case Success(Right(path)) => complete(path)
+            case Success(Left(error)) => complete(error)
+            case Failure(thrown)      => complete(thrown)
+          }
         }
-      }
     }
   }
 

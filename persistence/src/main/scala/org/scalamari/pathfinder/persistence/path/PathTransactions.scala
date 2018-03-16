@@ -19,8 +19,8 @@ private[path] object PathTransactions {
        |
        |  var documents = _.map(edges, function(edge) {
        |    return {
-       |      "_from": edge.fromVertexId,
-       |      "_to": edge.toVertexId
+       |      "_from": edge.fromNodeId,
+       |      "_to": edge.toNodeId
        |    }
        |  });
        |

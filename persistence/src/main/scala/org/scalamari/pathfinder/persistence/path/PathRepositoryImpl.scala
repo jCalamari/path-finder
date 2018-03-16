@@ -5,7 +5,7 @@ import com.arangodb.model.TransactionOptions
 import com.arangodb.velocypack.VPackSlice
 import org.scalamari.pathfinder.domain.path.PathRepository
 import org.scalamari.pathfinder.domain.{DomainError, UnknownDomainError}
-import org.scalamari.pathfinder.model.{Edge, Path, VertexId}
+import org.scalamari.pathfinder.model.{Edge, Path, NodeId}
 import org.scalamari.pathfinder.persistence.path.PathErrorMessages._
 import org.scalamari.pathfinder.persistence.path.PathTransactions._
 
@@ -32,11 +32,11 @@ private[pathfinder] final class PathRepositoryImpl(database: ArangoDatabase)(imp
       case NonFatal(thrown) => Left(UnknownDomainError(CreatePathErrorMessage, Some(thrown)))
     }
 
-  override def findPaths(fromVertexId: VertexId, toVertexId: VertexId, maxDepth: Int = 3): Future[Either[DomainError, Vector[Path]]] =
+  override def findPaths(fromNodeId: NodeId, toNodeId: NodeId, maxDepth: Int = 3): Future[Either[DomainError, Vector[Path]]] =
     Future {
       val params: Map[String, AnyRef] = Map(
-        "source" -> fromVertexId.value,
-        "target" -> toVertexId.value,
+        "source" -> fromNodeId.value,
+        "target" -> toNodeId.value,
         "depth" -> s"$maxDepth"
       )
       Right {
@@ -47,7 +47,7 @@ private[pathfinder] final class PathRepositoryImpl(database: ArangoDatabase)(imp
           .toVector
       }
     } recover {
-      case NonFatal(thrown) => Left(UnknownDomainError(findPathsErrorMessage(fromVertexId, toVertexId), Some(thrown)))
+      case NonFatal(thrown) => Left(UnknownDomainError(findPathsErrorMessage(fromNodeId, toNodeId), Some(thrown)))
     }
 
 }
