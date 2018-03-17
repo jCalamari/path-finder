@@ -19,9 +19,9 @@ private[application] final class PathRoute(pathService: PathService) extends Dir
           case Failure(thrown)       => complete(thrown)
         }
       } ~
-        (post & path(IdSegment.repeat(2, 10, Slash)) & pathEndOrSingleSlash) { nodeIds =>
-          val edges = nodeIds.sliding(2).map { case Seq(fromId, toId) => Edge(fromId, toId) }.toVector
-          onComplete(pathService.createPath(Path(edges))) {
+        (post & path(IdSegment / IdSegment) & entity(as[Map[String, String]]) & pathEndOrSingleSlash) { (fromId, toId, metadata) =>
+          val edge = Edge(fromId, toId, metadata)
+          onComplete(pathService.createPath(Path(Vector(edge)))) {
             case Success(Right(path)) => complete(path)
             case Success(Left(error)) => complete(error)
             case Failure(thrown)      => complete(thrown)

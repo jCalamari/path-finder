@@ -17,7 +17,7 @@ private[application] trait JsonProtocol extends DefaultJsonProtocol {
     override def write(obj: T): JsValue = JsString(w(obj))
   }
 
-  implicit val edgeFormat = jsonFormat2(Edge)
+  implicit val edgeFormat = jsonFormat3(Edge)
 
   implicit val pathFormat = jsonFormat1(Path)
 

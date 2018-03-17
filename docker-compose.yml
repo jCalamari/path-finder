@@ -1,0 +1,20 @@
+version: '2'
+services:
+
+  path-finder:
+    image: 'scalamari/path-finder:latest'
+    container_name: 'path-finder'
+    environment:
+      PERSISTENCE_HOST: arangodb
+    ports:
+      - '80:8080'
+    depends_on:
+      - 'arangodb'
+
+  arangodb:
+    image: 'arangodb/arangodb:3.3.4'
+    container_name: 'arangodb'
+    environment:
+      ARANGO_NO_AUTH: 'true'
+    ports:
+      - '8529:8529'

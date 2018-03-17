@@ -4,12 +4,13 @@ import com.arangodb.ArangoDatabase
 import org.scalamari.pathfinder.domain.node.NodeRepository
 import org.scalamari.pathfinder.domain.{DomainError, NodeNotFound, UnknownDomainError}
 import org.scalamari.pathfinder.model._
+import org.scalamari.pathfinder.persistence.Logging
 import org.scalamari.pathfinder.persistence.node.NodeErrorMessages._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-private[pathfinder] final class NodeRepositoryImpl(database: ArangoDatabase)(implicit ec: ExecutionContext) extends NodeRepository {
+private[pathfinder] final class NodeRepositoryImpl(database: ArangoDatabase)(implicit ec: ExecutionContext) extends NodeRepository with Logging {
 
   private lazy val nodes = database.collection("nodes")
 
@@ -20,7 +21,10 @@ private[pathfinder] final class NodeRepositoryImpl(database: ArangoDatabase)(imp
         case None => Left(NodeNotFound(id))
       }
     } recover {
-      case NonFatal(thrown) => Left(UnknownDomainError(getNodeErrorMessage(id), Some(thrown)))
+      case NonFatal(thrown) =>
+        val message = getNodeErrorMessage(id)
+        logger.error(message, thrown)
+        Left(UnknownDomainError(message, Some(thrown)))
     }
   }
 
@@ -29,7 +33,10 @@ private[pathfinder] final class NodeRepositoryImpl(database: ArangoDatabase)(imp
       nodes.insertDocument(node)
       Right(node)
     } recover {
-      case NonFatal(thrown) => Left(UnknownDomainError(createNodeErrorMessage(node.id), Some(thrown)))
+      case NonFatal(thrown) =>
+        val message = createNodeErrorMessage(node.id)
+        logger.error(message, thrown)
+        Left(UnknownDomainError(message, Some(thrown)))
     }
   }
 

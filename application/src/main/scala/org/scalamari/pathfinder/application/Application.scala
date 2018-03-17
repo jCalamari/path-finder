@@ -13,13 +13,14 @@ import org.scalamari.pathfinder.domain.node.{NodeRepository, NodeService}
 import org.scalamari.pathfinder.domain.path.{PathRepository, PathService}
 import org.scalamari.pathfinder.persistence.node.NodeRepositoryImpl
 import org.scalamari.pathfinder.persistence.path.PathRepositoryImpl
+import org.scalamari.pathfinder.persistence.vpack.PathFinderModule
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
-private[application] final class Server(config: ServerConfig) {
+private[application] final class Application(config: ApplicationConfig) {
 
-  def start: Future[ServerShutdownHook] = {
-    implicit val system: ActorSystem = ActorSystem(config.serverName)
+  def start: Future[ShutdownHook] = {
+    implicit val system: ActorSystem = ActorSystem(config.applicationName)
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
@@ -33,7 +34,7 @@ private[application] final class Server(config: ServerConfig) {
     val route = Route.seal(pathRoute.route ~ nodeRoute.route)
 
     Http().bindAndHandle(route, config.host, config.port).map { binding =>
-      new ServerShutdownHook {
+      new ShutdownHook {
         override def shutdown(): Future[Unit] = {
           binding.unbind().fast.map(_ => ())
         }
@@ -43,10 +44,12 @@ private[application] final class Server(config: ServerConfig) {
 
   private def buildArangoDatabase: ArangoDatabase = {
     new ArangoDB.Builder()
+      .host(config.persistence.host, config.persistence.port)
       .registerModule(new VPackScalaModule)
       .registerModule(new VPackJdk8Module)
+      .registerModule(new PathFinderModule)
       .build()
-      .db(config.serverName)
+      .db(config.applicationName)
   }
 
 }

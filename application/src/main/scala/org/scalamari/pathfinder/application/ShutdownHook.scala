@@ -2,7 +2,7 @@ package org.scalamari.pathfinder.application
 
 import scala.concurrent.Future
 
-private[application] trait ServerShutdownHook {
+private[application] trait ShutdownHook {
 
   def shutdown(): Future[Unit]
 

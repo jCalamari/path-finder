@@ -2,25 +2,26 @@ package org.scalamari.pathfinder.persistence.path
 
 private[path] object PathTransactions {
 
-  def findPathsTransaction(collectionName: String): String =
+  val findPathsTransaction: String =
     s"""
-       |FOR target, unused, path IN @depth ANY @source $collectionName
-       |  FILTER target.id == @target
+       |FOR v,e,p IN 1..@depth ANY 'nodes/'@source GRAPH 'graph'
+       |  FILTER v.id == @target
        |  RETURN path
     """.stripMargin
 
-  val createPathTransaction =
+  val createPathTransaction: String =
     s"""
-       |function(edges) {
+       |function(path) {
        |
        |  var arangodb = require("@arangodb");
        |  var db = arangodb.db;
        |  var _ = require("lodash");
        |
-       |  var documents = _.map(edges, function(edge) {
+       |  var documents = _.map(path.edges, function(edge) {
        |    return {
-       |      "_from": edge.fromNodeId,
-       |      "_to": edge.toNodeId
+       |      "_from": "nodes/" + edge.fromNodeId,
+       |      "_to": "nodes/" + edge.toNodeId,
+       |      "metadata": edge.metadata
        |    }
        |  });
        |
@@ -28,7 +29,7 @@ private[path] object PathTransactions {
        |    db.edges.insert(documents[doc]);
        |  }
        |
-       |  return edges;
+       |  return path;
        |
        |}
      """.stripMargin

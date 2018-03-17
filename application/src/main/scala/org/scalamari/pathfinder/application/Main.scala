@@ -10,8 +10,8 @@ private[application] object Main {
   private val waitForServerTimeout = 60.seconds
 
   def main(args: Array[String]): Unit = {
-    val config = ServerConfig()
-    new Server(config).start.onComplete {
+    val config = ApplicationConfig()
+    new Application(config).start.onComplete {
       case Success(hook) => sys.addShutdownHook {
         Await.result(hook.shutdown(), waitForServerTimeout)
       }
