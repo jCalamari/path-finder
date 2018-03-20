@@ -8,7 +8,7 @@ private[vpack] trait VPackInstances {
   object NodeDeserializer extends VPackDeserializer[Node] {
     override def deserialize(parent: VPackSlice, vpack: VPackSlice, context: VPackDeserializationContext): Node = {
       val name = vpack.getStringAs("name", NodeName)
-      val id = vpack.getStringAs("id", NodeId)
+      val id = vpack.getStringAs("_key", NodeId)
       val metadata = vpack.getAsMap("metadata", _.getAsString)
       Node(id, name, metadata)
     }
@@ -17,7 +17,7 @@ private[vpack] trait VPackInstances {
   object NodeSerializer extends VPackSerializer[Node] {
     override def serialize(builder: VPackBuilder, attribute: String, node: Node, context: VPackSerializationContext): Unit = {
       builder.add(ValueType.OBJECT)
-      builder.add("id", node.id.value)
+      builder.add("_key", node.id.value)
       builder.add("name", node.name.value)
       if (node.metadata.nonEmpty) {
         builder.add("metadata", ValueType.OBJECT)
@@ -39,7 +39,7 @@ private[vpack] trait VPackInstances {
 
   object EdgeSerializer extends VPackSerializer[Edge] {
     override def serialize(builder: VPackBuilder, attribute: String, edge: Edge, context: VPackSerializationContext): Unit = {
-      builder.add(ValueType.OBJECT)
+      builder.add(attribute, ValueType.OBJECT)
       builder.add("fromNodeId", edge.fromNodeId.value)
       builder.add("toNodeId", edge.toNodeId.value)
       if (edge.metadata.nonEmpty) {
@@ -60,10 +60,10 @@ private[vpack] trait VPackInstances {
 
   object PathSerializer extends VPackSerializer[Path] {
     override def serialize(builder: VPackBuilder, attribute: String, value: Path, context: VPackSerializationContext): Unit = {
-      builder.add(ValueType.OBJECT)
+      builder.add(attribute, ValueType.OBJECT)
       if (value.edges.nonEmpty) {
         builder.add("edges", ValueType.ARRAY)
-        value.edges.foreach(edge => EdgeSerializer.serialize(builder, "edges", edge, context))
+        value.edges.foreach(edge => EdgeSerializer.serialize(builder, null, edge, context))
         builder.close()
       }
       builder.close()

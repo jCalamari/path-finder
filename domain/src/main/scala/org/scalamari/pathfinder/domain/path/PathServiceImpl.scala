@@ -12,7 +12,7 @@ private[domain] final class PathServiceImpl(pathRepository: PathRepository) exte
   }
 
   override def createPath(path: Path): Future[Either[DomainError, Path]] = {
-    // to validate path
+    // TODO validate path
     pathRepository.createPath(path)
   }
 

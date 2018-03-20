@@ -29,18 +29,17 @@ private[pathfinder] final class PathRepositoryImpl(database: ArangoDatabase)(imp
         Left(UnknownDomainError(message, Some(thrown)))
     }
 
-  override def findPaths(fromNodeId: NodeId, toNodeId: NodeId, maxDepth: Int = 3): Future[Either[DomainError, Vector[Path]]] =
+  override def findPaths(fromNodeId: NodeId, toNodeId: NodeId): Future[Either[DomainError, Vector[Path]]] =
     Future {
       val params: Map[String, AnyRef] = Map(
-        "source" -> fromNodeId.value,
-        "target" -> toNodeId.value,
-        "depth" -> s"$maxDepth"
+        "source" -> s"nodes/${fromNodeId.value}",
+        "target" -> s"nodes/${toNodeId.value}"
       )
       Right {
-        database.transaction(findPathsTransaction, classOf[VPackSlice], new TransactionOptions().params(params.asJava))
-          .arrayIterator()
+        database.query(findPathsTransaction, params.asJava, null, classOf[VPackSlice])
+          .iterator()
           .asScala
-          .map(slice => database.util().deserialize(slice, classOf[Path]))
+          .map(slice => database.util().deserialize[Path](slice, classOf[Path]))
           .toVector
       }
     } recover {

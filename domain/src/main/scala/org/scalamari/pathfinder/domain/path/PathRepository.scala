@@ -9,6 +9,6 @@ private[pathfinder] trait PathRepository {
 
   def createPath(path: Path): Future[Either[DomainError, Path]]
 
-  def findPaths(fromNodeId: NodeId, toNodeId: NodeId, maxDepth: Int = 3): Future[Either[DomainError, Vector[Path]]]
+  def findPaths(fromNodeId: NodeId, toNodeId: NodeId): Future[Either[DomainError, Vector[Path]]]
 
 }

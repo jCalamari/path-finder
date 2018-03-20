@@ -2,6 +2,7 @@ name := "path-finder"
 
 def PathFinderProject(name: String): Project = {
   Project(name, file(name))
+    .settings(Dependencies.testDependencies)
     .settings(organization := "org.scalamari.pathfinder")
     .settings(scalaVersion := "2.12.4")
     .settings(version := "0.1")
@@ -36,3 +37,9 @@ lazy val application = PathFinderProject("application")
   .settings(dockerUpdateLatest := true)
   .enablePlugins(JavaAppPackaging, DockerPlugin)
   .dependsOn(persistence)
+
+lazy val root = project.in(file("."))
+  .aggregate(model)
+  .aggregate(domain)
+  .aggregate(persistence)
+  .aggregate(application)

@@ -1,6 +1,6 @@
 package org.scalamari.pathfinder.persistence
 
-import com.arangodb.velocypack.VPackSlice
+import com.arangodb.velocypack.{VPackSlice, ValueType}
 
 import scala.collection.JavaConverters._
 
@@ -17,6 +17,7 @@ package object vpack extends VPackInstances {
 
     def getAsMap[T](key: String, v: VPackSlice => T): Map[String, T] = {
       Option(value.get(key))
+        .filter(_.getType == ValueType.OBJECT)
         .map(_.objectIterator)
         .map(_.asScala)
         .getOrElse(Iterator.empty)
@@ -27,6 +28,7 @@ package object vpack extends VPackInstances {
 
     def getAsVector[T](key: String, v: VPackSlice => T): Vector[T] = {
       Option(value.get(key))
+        .filter(_.getType == ValueType.ARRAY)
         .map(_.arrayIterator())
         .map(_.asScala)
         .getOrElse(Iterator.empty)

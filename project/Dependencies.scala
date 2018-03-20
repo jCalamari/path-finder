@@ -9,7 +9,9 @@ object Dependencies {
     val arangoDB      = "4.3.3"
     val arangoDBJdk8  = "1.0.3"
     val arangoDBScala = "1.0.1"
+    val easymock      = "3.4"
     val logback       = "1.2.3"
+    val scalaTest     = "3.0.1"
   }
 
   object Libraries {
@@ -19,7 +21,10 @@ object Dependencies {
     val arangoDB            = "com.arangodb"            %  "arangodb-java-driver"                 % Versions.arangoDB
     val arangoDBJdk8        = "com.arangodb"            %  "velocypack-module-jdk8"               % Versions.arangoDBJdk8
     val arangoDBScala       = "com.arangodb"            %  "velocypack-module-scala"              % Versions.arangoDBScala
+    val easymock            = "org.easymock"            %  "easymock"                             % Versions.easymock
     val logback             = "ch.qos.logback"          %  "logback-classic"                      % Versions.logback
+    val scalatest           = "org.scalatest"           %% "scalatest"                            % Versions.scalaTest
+    val scalactic           = "org.scalactic"           %% "scalactic"                            % Versions.scalaTest
   }
 
   lazy val persistence = libraryDependencies ++= Seq(
@@ -34,5 +39,11 @@ object Dependencies {
     Libraries.akkaHttpSprayJson,
     Libraries.akkaStreams
   )
+
+  lazy val testDependencies = libraryDependencies ++= Seq(
+    Libraries.easymock,
+    Libraries.scalatest,
+    Libraries.scalactic
+  ).map(_ % Test)
 
 }
